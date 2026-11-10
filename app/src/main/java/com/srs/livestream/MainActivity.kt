@@ -444,7 +444,7 @@ fun DiscoverScreen(navigate: (String) -> Unit) {
                     .fillMaxWidth()
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 placeholder = {
-                    Text("Search live hosts...", color = Muted)
+                    Text("find live hosts...", color = Muted)
                 },
                 singleLine = true,
                 shape = RoundedCornerShape(18.dp),
