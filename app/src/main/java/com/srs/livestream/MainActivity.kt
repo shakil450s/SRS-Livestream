@@ -1,10 +1,15 @@
 package com.srs.livestream
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -541,6 +546,7 @@ fun DiscoverScreen(navigate: (String) -> Unit) {
 @Composable
 fun GoLiveScreen(navigate: (String) -> Unit) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     var cameraGranted by remember {
         mutableStateOf(
@@ -577,18 +583,59 @@ fun GoLiveScreen(navigate: (String) -> Unit) {
         ) {
             AppHeader("Go Live")
 
-            Spacer(Modifier.height(35.dp))
+            Spacer(Modifier.height(20.dp))
 
-            Box(
-                modifier = Modifier.size(175.dp)
-                    .background(Panel, CircleShape)
-                    .border(5.dp, Purple, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("📷", fontSize = 75.sp)
+            if (cameraGranted) {
+                AndroidView(
+                    factory = { viewContext ->
+                        PreviewView(viewContext).apply {
+                            scaleType =
+                                PreviewView.ScaleType.FILL_CENTER
+
+                            val cameraProviderFuture =
+                                ProcessCameraProvider.getInstance(viewContext)
+
+                            cameraProviderFuture.addListener({
+                                val cameraProvider =
+                                    cameraProviderFuture.get()
+
+                                val preview = Preview.Builder()
+                                    .build()
+                                    .also {
+                                        it.setSurfaceProvider(
+                                            surfaceProvider
+                                        )
+                                    }
+
+                                try {
+                                    cameraProvider.unbindAll()
+                                    cameraProvider.bindToLifecycle(
+                                        lifecycleOwner,
+                                        CameraSelector.DEFAULT_FRONT_CAMERA,
+                                        preview
+                                    )
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            }, ContextCompat.getMainExecutor(viewContext))
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                        .height(300.dp)
+                )
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                        .height(300.dp)
+                        .background(Panel, RoundedCornerShape(18.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("📷 Camera Preview", color = White,
+                        fontSize = 24.sp)
+                }
             }
 
-            Spacer(Modifier.height(25.dp))
+            Spacer(Modifier.height(20.dp))
 
             Text(
                 "Start Your Live",
@@ -603,7 +650,7 @@ fun GoLiveScreen(navigate: (String) -> Unit) {
                 fontSize = 14.sp
             )
 
-            Spacer(Modifier.height(25.dp))
+            Spacer(Modifier.height(20.dp))
 
             ActionRow(
                 if (cameraGranted) "✅" else "📷",
@@ -655,6 +702,7 @@ fun GoLiveScreen(navigate: (String) -> Unit) {
         BottomNav("Go Live", navigate)
     }
 }
+
 
 
 @Composable
