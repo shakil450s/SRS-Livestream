@@ -46,7 +46,7 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
 
-    implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-auth")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
