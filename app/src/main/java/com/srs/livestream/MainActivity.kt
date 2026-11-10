@@ -402,24 +402,72 @@ fun HostItem(emoji: String, name: String, fans: String) {
     }
 }
 
+
+
+
 @Composable
 fun DiscoverScreen(navigate: (String) -> Unit) {
     var category by remember { mutableStateOf("All") }
+    var search by remember { mutableStateOf("") }
+
     val categories = listOf("All", "Music", "Gaming", "Chat", "Dance")
+
+    val hosts = listOf(
+        Triple("🎤", "Music Vibes ❤️", "SRS Queen"),
+        Triple("🎮", "Game Zone", "Gaming Boy"),
+        Triple("💬", "Chat Room", "Riya"),
+        Triple("💃", "Dance Time", "Mim")
+    )
+
+    val filteredHosts = hosts.filter { host ->
+        val matchesCategory = category == "All" ||
+            (category == "Music" && host.second.contains("Music")) ||
+            (category == "Gaming" && host.second.contains("Game")) ||
+            (category == "Chat" && host.second.contains("Chat")) ||
+            (category == "Dance" && host.second.contains("Dance"))
+
+        val matchesSearch = search.isBlank() ||
+            host.second.contains(search, ignoreCase = true) ||
+            host.third.contains(search, ignoreCase = true)
+
+        matchesCategory && matchesSearch
+    }
 
     AppBackground {
         Column(modifier = Modifier.weight(1f)) {
             AppHeader("Discover")
+
+            OutlinedTextField(
+                value = search,
+                onValueChange = { search = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                placeholder = {
+                    Text("Search live hosts...", color = Muted)
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(18.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Pink,
+                    unfocusedBorderColor = Purple,
+                    focusedTextColor = White,
+                    unfocusedTextColor = White,
+                    cursorColor = Cyan
+                )
+            )
+
             Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState())
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                categories.forEach {
+                categories.forEach { item ->
                     FilterChip(
-                        selected = category == it,
-                        onClick = { category = it },
-                        label = { Text(it) },
+                        selected = category == item,
+                        onClick = { category = item },
+                        label = { Text(item) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Pink,
                             selectedLabelColor = White
@@ -427,28 +475,50 @@ fun DiscoverScreen(navigate: (String) -> Unit) {
                     )
                 }
             }
+
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .verticalScroll(rememberScrollState())
                     .padding(12.dp)
             ) {
-                Text("Live Now", color = White, fontSize = 21.sp,
-                    fontWeight = FontWeight.Bold)
+                Text(
+                    "🔴 LIVE NOW",
+                    color = Pink,
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
                 Spacer(Modifier.height(12.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    LiveCard("🎤", "Music Vibes ❤️", "SRS Queen", "15.2K")
-                    LiveCard("🎮", "Game Zone", "Gaming Boy", "12.1K", Cyan)
+
+                if (filteredHosts.isEmpty()) {
+                    Text("No hosts found", color = White)
+                } else {
+                    filteredHosts.forEach { host ->
+                        LiveCard(
+                            host.first,
+                            host.second,
+                            host.third,
+                            "Live",
+                            Cyan
+                        )
+                        Spacer(Modifier.height(12.dp))
+                    }
                 }
+
+                Spacer(Modifier.height(18.dp))
+
+                Text(
+                    "⭐ RECOMMENDED HOSTS",
+                    color = White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
                 Spacer(Modifier.height(12.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    LiveCard("💬", "Chat Room", "Riya", "9.8K", Pink)
-                    LiveCard("💃", "Dance Time", "Mim", "7.6K")
-                }
-                Spacer(Modifier.height(20.dp))
-                Text("Recommended Hosts", color = White,
-                    fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(15.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     HostItem("👩", "Sana", "248K")
@@ -457,6 +527,7 @@ fun DiscoverScreen(navigate: (String) -> Unit) {
                 }
             }
         }
+
         BottomNav("Discover", navigate)
     }
 }
