@@ -1,4 +1,10 @@
 package com.srs.livestream
+import android.app.Activity
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
+import java.util.concurrent.TimeUnit
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -176,6 +182,126 @@ fun WelcomeScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(58.dp),
+
+@Composable
+fun WelcomeScreen(
+    onLogin: () -> Unit,
+    onSignup: () -> Unit,
+    onExplore: () -> Unit
+) {
+    val context = LocalContext.current
+    val activity = context as Activity
+    val auth = remember { FirebaseAuth.getInstance() }
+
+    var showPhoneLogin by remember { mutableStateOf(false) }
+    var phone by remember { mutableStateOf("") }
+    var otp by remember { mutableStateOf("") }
+    var verificationId by remember { mutableStateOf<String?>(null) }
+    var status by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
+
+    fun verifyCredential(credential: com.google.firebase.auth.PhoneAuthCredential) {
+        loading = true
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                loading = false
+                if (task.isSuccessful) {
+                    onLogin()
+                } else {
+                    status = task.exception?.localizedMessage
+                        ?: "OTP verification failed"
+                }
+            }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color(0xFF19002F), Bg, Color(0xFF080D2B))
+                )
+            )
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Spacer(Modifier.height(35.dp))
+
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(
+                    Brush.linearGradient(listOf(Purple, Pink, Cyan)),
+                    RoundedCornerShape(28.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("▶", color = White, fontSize = 55.sp)
+        }
+
+        Spacer(Modifier.height(22.dp))
+
+        Text(
+            "SRS LIVESTREAM",
+            color = White,
+            fontSize = 29.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+
+        Text("CONNECT • STREAM • SHARE", color = Cyan, fontSize = 12.sp)
+
+        Spacer(Modifier.height(40.dp))
+
+        Text(
+            "Your world. Your stage.",
+            color = White,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        Text(
+            "Join live rooms and connect with people.",
+            color = Muted,
+            fontSize = 14.sp
+        )
+
+        Spacer(Modifier.height(35.dp))
+
+        Button(
+            onClick = { onSignup() },
+            modifier = Modifier.fillMaxWidth().height(58.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = White,
+                contentColor = Color(0xFF202124)
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text(
+                "G",
+                color = Color(0xFF4285F4),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                "Continue with Google",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = {
+                showPhoneLogin = !showPhoneLogin
+                status = ""
+            },
+            modifier = Modifier.fillMaxWidth().height(58.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
             Text("📱", fontSize = 20.sp)
@@ -202,16 +328,96 @@ fun WelcomeScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            Button(
-                onClick = { onLogin() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Pink
+            if (verificationId == null) {
+                Button(
+                    onClick = {
+                        if (!phone.trim().startsWith("+")) {
+                            status = "Enter number with country code, e.g. +8801XXXXXXXXX"
+                        } else {
+                            loading = true
+                            status = "Sending OTP..."
+
+                            val callbacks =
+                                object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+
+                                    override fun onVerificationCompleted(
+                                        credential: com.google.firebase.auth.PhoneAuthCredential
+                                    ) {
+                                        verifyCredential(credential)
+                                    }
+
+                                    override fun onVerificationFailed(
+                                        e: FirebaseException
+                                    ) {
+                                        loading = false
+                                        status = e.localizedMessage
+                                            ?: "OTP could not be sent"
+                                    }
+
+                                    override fun onCodeSent(
+                                        id: String,
+                                        token: PhoneAuthProvider.ForceResendingToken
+                                    ) {
+                                        loading = false
+                                        verificationId = id
+                                        status = "OTP sent. Check your SMS."
+                                    }
+                                }
+
+                            val options = PhoneAuthOptions.newBuilder(auth)
+                                .setPhoneNumber(phone.trim())
+                                .setTimeout(60L, TimeUnit.SECONDS)
+                                .setActivity(activity)
+                                .setCallbacks(callbacks)
+                                .build()
+
+                            PhoneAuthProvider.verifyPhoneNumber(options)
+                        }
+                    },
+                    enabled = !loading,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Pink
+                    )
+                ) {
+                    Text(if (loading) "PLEASE WAIT..." else "SEND OTP")
+                }
+            } else {
+                OutlinedTextField(
+                    value = otp,
+                    onValueChange = { otp = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Enter OTP") },
+                    placeholder = { Text("6-digit code") },
+                    singleLine = true
                 )
-            ) {
-                Text("CONTINUE")
+
+                Spacer(Modifier.height(12.dp))
+
+                Button(
+                    onClick = {
+                        val id = verificationId
+                        if (id != null && otp.length == 6) {
+                            val credential =
+                                PhoneAuthProvider.getCredential(id, otp.trim())
+                            verifyCredential(credential)
+                        } else {
+                            status = "Enter the 6-digit OTP"
+                        }
+                    },
+                    enabled = !loading,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Pink
+                    )
+                ) {
+                    Text(if (loading) "VERIFYING..." else "VERIFY OTP")
+                }
+            }
+
+            if (status.isNotBlank()) {
+                Spacer(Modifier.height(12.dp))
+                Text(status, color = Cyan, fontSize = 13.sp)
             }
         }
 
