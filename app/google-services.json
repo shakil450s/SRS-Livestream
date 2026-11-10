@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "635819909005",
+    "project_id": "srs-a3418",
+    "storage_bucket": "srs-a3418.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:635819909005:android:ca70a9e964618f65c6e7c4",
+        "android_client_info": {
+          "package_name": "com.srs.livestream"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5HvJsW7o1OsTDWwN2LUXpweYL3Elm7kg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
