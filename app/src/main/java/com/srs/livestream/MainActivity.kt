@@ -1,6 +1,11 @@
-
 package com.srs.livestream
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -532,43 +537,125 @@ fun DiscoverScreen(navigate: (String) -> Unit) {
     }
 }
 
+
 @Composable
 fun GoLiveScreen(navigate: (String) -> Unit) {
+    val context = LocalContext.current
+
+    var cameraGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    var micGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            cameraGranted =
+                permissions[Manifest.permission.CAMERA] == true
+            micGranted =
+                permissions[Manifest.permission.RECORD_AUDIO] == true
+        }
+
     AppBackground {
         Column(
             modifier = Modifier.weight(1f)
-                .verticalScroll(rememberScrollState()).padding(20.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AppHeader("Go Live")
-            Spacer(Modifier.height(45.dp))
+
+            Spacer(Modifier.height(35.dp))
+
             Box(
                 modifier = Modifier.size(175.dp)
                     .background(Panel, CircleShape)
                     .border(5.dp, Purple, CircleShape),
                 contentAlignment = Alignment.Center
-            ) { Text("📷", fontSize = 75.sp) }
+            ) {
+                Text("📷", fontSize = 75.sp)
+            }
+
             Spacer(Modifier.height(25.dp))
-            Text("Start Your Live", color = White,
-                fontSize = 25.sp, fontWeight = FontWeight.Bold)
-            Text("Share your talent with the world",
-                color = Muted, fontSize = 14.sp)
-            Spacer(Modifier.height(30.dp))
-            ActionRow("📷", "Camera")
-            ActionRow("▦", "Choose Category")
+
+            Text(
+                "Start Your Live",
+                color = White,
+                fontSize = 25.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                "Share your talent with the world",
+                color = Muted,
+                fontSize = 14.sp
+            )
+
+            Spacer(Modifier.height(25.dp))
+
+            ActionRow(
+                if (cameraGranted) "✅" else "📷",
+                if (cameraGranted) "Camera Permission Granted"
+                else "Camera Permission Needed"
+            )
+
+            ActionRow(
+                if (micGranted) "✅" else "🎤",
+                if (micGranted) "Microphone Permission Granted"
+                else "Microphone Permission Needed"
+            )
+
             Spacer(Modifier.height(20.dp))
+
             Button(
-                onClick = { },
+                onClick = {
+                    if (!cameraGranted || !micGranted) {
+                        permissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.CAMERA,
+                                Manifest.permission.RECORD_AUDIO
+                            )
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth().height(55.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Pink)
-            ) { Text("GO LIVE", fontWeight = FontWeight.Bold) }
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Pink
+                )
+            ) {
+                Text(
+                    if (cameraGranted && micGranted)
+                        "PERMISSIONS GRANTED"
+                    else "ALLOW CAMERA & MICROPHONE",
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
             Spacer(Modifier.height(15.dp))
-            Text("Be Safe & Follow Community Rules ❤️",
-                color = Muted, fontSize = 12.sp)
+
+            Text(
+                "Be Safe & Follow Community Rules ❤️",
+                color = Muted,
+                fontSize = 12.sp
+            )
         }
+
         BottomNav("Go Live", navigate)
     }
 }
+
 
 @Composable
 fun ActionRow(icon: String, title: String) {
