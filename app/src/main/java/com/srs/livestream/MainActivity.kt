@@ -78,48 +78,155 @@ fun WelcomeScreen(
     onSignup: () -> Unit,
     onExplore: () -> Unit
 ) {
+    var showPhoneLogin by remember { mutableStateOf(false) }
+    var phone by remember { mutableStateOf("") }
+
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    listOf(Color(0xFF17002F), Bg, Color(0xFF090D30))
+                    listOf(Color(0xFF19002F), Bg, Color(0xFF080D2B))
                 )
-            ).padding(24.dp),
+            )
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("▶", color = Cyan, fontSize = 72.sp,
-            fontWeight = FontWeight.Black)
-        Text("SRS LIVESTREAM", color = White,
-            fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
-        Text("CONNECT • STREAM • SHARE",
-            color = Cyan, fontSize = 12.sp)
         Spacer(Modifier.height(35.dp))
-        Text("Your world. Your stage.", color = White,
-            fontSize = 25.sp, fontWeight = FontWeight.Bold)
-        Text("Meet people, share moments and enjoy live rooms.",
-            color = Muted, fontSize = 14.sp)
+
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(
+                    Brush.linearGradient(
+                        listOf(Purple, Pink, Cyan)
+                    ),
+                    RoundedCornerShape(28.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("▶", color = White, fontSize = 55.sp)
+        }
+
+        Spacer(Modifier.height(22.dp))
+
+        Text(
+            "SRS LIVESTREAM",
+            color = White,
+            fontSize = 29.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+
+        Text(
+            "CONNECT • STREAM • SHARE",
+            color = Cyan,
+            fontSize = 12.sp
+        )
+
+        Spacer(Modifier.height(40.dp))
+
+        Text(
+            "Your world. Your stage.",
+            color = White,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        Text(
+            "Join live rooms and connect with people.",
+            color = Muted,
+            fontSize = 14.sp
+        )
+
         Spacer(Modifier.height(35.dp))
+
         Button(
-            onClick = onLogin,
-            modifier = Modifier.fillMaxWidth().height(54.dp),
+            onClick = { onSignup() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(58.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Purple
+                containerColor = White,
+                contentColor = Color(0xFF202124)
             ),
             shape = RoundedCornerShape(16.dp)
-        ) { Text("LOGIN", fontWeight = FontWeight.Bold) }
-        Spacer(Modifier.height(13.dp))
-        OutlinedButton(
-            onClick = onSignup,
-            modifier = Modifier.fillMaxWidth().height(54.dp),
-            shape = RoundedCornerShape(16.dp)
-        ) { Text("CREATE ACCOUNT", color = Cyan) }
-        Spacer(Modifier.height(18.dp))
-        TextButton(onClick = onExplore) {
-            Text("Explore as Guest", color = Muted)
+        ) {
+            Text(
+                "G",
+                color = Color(0xFF4285F4),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                "Continue with Google",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
+
+        Spacer(Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = { showPhoneLogin = !showPhoneLogin },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(58.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text("📱", fontSize = 20.sp)
+            Spacer(Modifier.width(10.dp))
+            Text(
+                "Continue with Phone",
+                color = Cyan,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        if (showPhoneLogin) {
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = phone,
+                onValueChange = { phone = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Phone Number") },
+                placeholder = { Text("+8801XXXXXXXXX") },
+                singleLine = true
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            Button(
+                onClick = { onLogin() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Pink
+                )
+            ) {
+                Text("CONTINUE")
+            }
+        }
+
+        Spacer(Modifier.height(25.dp))
+
+        Text(
+            "By continuing, you agree to our Terms & Privacy Policy.",
+            color = Muted,
+            fontSize = 11.sp
+        )
+
+        Spacer(Modifier.height(30.dp))
     }
 }
+
 
 @Composable
 fun AccountScreen(
