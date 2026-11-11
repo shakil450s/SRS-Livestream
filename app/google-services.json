@@ -12,7 +12,12 @@
           "package_name": "com.srs.livestream"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "635819909005-pqajqiodn11967u998qlu9e5q2d6rkpj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC5HvJsW7o1OsTDWwN2LUXpweYL3Elm7kg"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "635819909005-pqajqiodn11967u998qlu9e5q2d6rkpj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
