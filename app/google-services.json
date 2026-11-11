@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "635819909005-pcgt9asl1p4av3sipc3sc4hkb4ehsv8d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.srs.livestream",
+            "certificate_hash": "11db6692d8f3bcc20fcf8f449bcaf993aebcc19a"
+          }
+        },
+        {
           "client_id": "635819909005-pqajqiodn11967u998qlu9e5q2d6rkpj.apps.googleusercontent.com",
           "client_type": 3
         }
