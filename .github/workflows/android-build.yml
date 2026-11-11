@@ -1,3 +1,4 @@
+
 name: SRS Android Build
 
 on:
@@ -29,12 +30,17 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Restore stable Android debug key
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.config/.android/debug.keystore
+          key: srs-debug-keystore-v1
+
       - name: Build Android APK
         run: gradle assembleDebug --no-daemon --stacktrace --info
 
       - name: Show SHA-1 fingerprint
-        run: |
-          gradle signingReport --no-daemon
+        run: gradle signingReport --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
