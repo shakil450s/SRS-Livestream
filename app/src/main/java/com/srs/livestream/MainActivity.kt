@@ -1,4 +1,14 @@
 package com.srs.livestream
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.CustomCredential
+import androidx.credentials.exceptions.GetCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.auth.GoogleAuthProvider
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import android.app.Activity
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
@@ -10,7 +20,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.platform.LocalContext
+
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import android.Manifest
 import android.content.pm.PackageManager
@@ -33,7 +43,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 private val Bg = Color(0xFF05051A)
 private val Panel = Color(0xFF11102D)
 private val Purple = Color(0xFF9B20FF)
@@ -77,6 +86,7 @@ fun SRSApp() {
         else -> HomeScreen { page = it }
     }
 }
+
 
 
 @Composable
