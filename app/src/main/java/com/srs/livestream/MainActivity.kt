@@ -98,7 +98,8 @@ fun WelcomeScreen(
     val context = LocalContext.current
     val activity = context as Activity
     val auth = remember { FirebaseAuth.getInstance() }
-
+    val credentialManager = remember { CredentialManager.create(context) }
+    val scope = rememberCoroutineScope()
     var showPhoneLogin by remember { mutableStateOf(false) }
     var phone by remember { mutableStateOf("") }
     var otp by remember { mutableStateOf("") }
@@ -178,7 +179,70 @@ fun WelcomeScreen(
         Spacer(Modifier.height(35.dp))
 
         Button(
-            onClick = { onSignup() },
+onClick = {
+    scope.launch {
+        loading = true
+        try {
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(
+                    context.getString(R.string.default_web_client_id)
+                )
+                .setAutoSelectEnabled(false)
+                .build()
+
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
+
+            val result = credentialManager.getCredential(
+                context = context,
+                request = request
+            )
+
+            val credential = result.credential
+
+            if (
+                credential is CustomCredential &&
+                credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+            ) {
+                val googleCredential =
+                    GoogleIdTokenCredential.createFrom(credential.data)
+
+                val firebaseCredential =
+                    GoogleAuthProvider.getCredential(
+                        googleCredential.idToken,
+                        null
+                    )
+
+                auth.signInWithCredential(firebaseCredential)
+                    .addOnCompleteListener { task ->
+                        loading = false
+                        if (task.isSuccessful) {
+                            onLogin()
+                        } else {
+                            android.widget.Toast.makeText(
+                                context,
+                                task.exception?.localizedMessage
+                                    ?: "Google login failed",
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+            } else {
+                loading = false
+            }
+        } catch (e: Exception) {
+            loading = false
+            android.widget.Toast.makeText(
+                context,
+                e.localizedMessage ?: "Google login failed",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+},
+
             modifier = Modifier.fillMaxWidth().height(58.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = White,
