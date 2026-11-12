@@ -883,7 +883,24 @@ fun AccountVerificationScreen(navigate: (String) -> Unit) {
         BottomNav("Profile", navigate)
     }
 }
-
+@Composable
+fun HostItem(emoji: String, name: String, fans: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier.size(65.dp)
+                .background(
+                    Brush.linearGradient(listOf(Pink, Purple, Cyan)),
+                    CircleShape
+                ).padding(3.dp).background(Panel, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(emoji, fontSize = 32.sp)
+        }
+        Text(name, color = White, fontSize = 12.sp,
+            fontWeight = FontWeight.Bold)
+        Text("$fans Fans", color = Muted, fontSize = 10.sp)
+    }
+}
 @Composable
 fun DiscoverScreen(navigate: (String) -> Unit) {
     var category by remember { mutableStateOf("All") }
