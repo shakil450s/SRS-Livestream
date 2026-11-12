@@ -75,6 +75,8 @@ fun SRSApp() {
             "Create Account", { page = "Welcome" }
         ) { page = "Home" }
         "Home" -> HomeScreen { page = it }
+        "Personal Information" -> PersonalInformationScreen { page = it }
+"Account Verification" -> AccountVerificationScreen { page = it }
         "Discover" -> DiscoverScreen { page = it }
         "Go Live" -> GoLiveScreen { page = it }
         "Messages" -> MessagesScreen { page = it }
@@ -586,113 +588,301 @@ fun LiveCard(
         Text(host, color = Muted, fontSize = 11.sp)
     }
 }
-
 @Composable
 fun HomeScreen(navigate: (String) -> Unit) {
+    var menuOpen by remember { mutableStateOf(false) }
+    val auth = remember { FirebaseAuth.getInstance() }
+    val user = auth.currentUser
+
+    Box(
+        modifier = Modifier.fillMaxSize().background(Bg)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "☰",
+                        color = White,
+                        fontSize = 30.sp,
+                        modifier = Modifier.clickable {
+                            menuOpen = true
+                        }
+                    )
+                    Spacer(Modifier.width(14.dp))
+                    Text("▶", color = Pink, fontSize = 30.sp)
+                    Text(
+                        "SRS LIVESTREAM",
+                        color = White,
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text("♧", color = Cyan, fontSize = 25.sp)
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        "●",
+                        color = Pink,
+                        fontSize = 23.sp,
+                        modifier = Modifier.clickable {
+                            navigate("Profile")
+                        }
+                    )
+                }
+
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 15.dp)
+                        .height(165.dp)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(Purple, Color(0xFF151044), Pink)
+                            ),
+                            RoundedCornerShape(20.dp)
+                        )
+                        .clickable { navigate("Discover") }
+                        .padding(18.dp)
+                ) {
+                    Column {
+                        Text("● LIVE TOGETHER", color = White)
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            "Your stage.\nYour people.",
+                            color = White,
+                            fontSize = 25.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text("JOIN NOW →", color = Cyan)
+                    }
+                    Text(
+                        "🎧",
+                        fontSize = 65.sp,
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    QuickTile("🔥", "Live Rooms") { navigate("Discover") }
+                    QuickTile("⭐", "Top Hosts") { navigate("Top Hosts") }
+                    QuickTile("🎁", "Gifts") { navigate("Gifts") }
+                    QuickTile("👑", "Recharge") { navigate("Recharge") }
+                }
+
+                SectionTitle("Live Now") {
+                    navigate("Discover")
+                }
+
+                Row(
+                    modifier = Modifier.horizontalScroll(
+                        rememberScrollState()
+                    ).padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    LiveCard("🎤", "Music Night", "SRS Queen", "12.5K")
+                    LiveCard("🎮", "Fun & Chat", "RDX Hero", "8.7K", Cyan)
+                    LiveCard("💃", "Dance Time", "Lovely Girl", "7.6K", Pink)
+                }
+
+                SectionTitle("Popular Hosts") {
+                    navigate("Top Hosts")
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    HostItem("👩", "Sana", "248K")
+                    HostItem("👑", "Mim", "197K")
+                    HostItem("🎤", "Riya", "185K")
+                }
+            }
+
+            BottomNav("Home", navigate)
+        }
+
+        if (menuOpen) {
+            Row(
+                modifier = Modifier.fillMaxSize()
+                    .background(Color(0xB8000000))
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxHeight()
+                        .fillMaxWidth(0.85f)
+                        .background(Color(0xFF0B0A24))
+                        .border(1.dp, Purple, RoundedCornerShape(18.dp))
+                        .verticalScroll(rememberScrollState())
+                        .padding(18.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "SRS LIVESTREAM",
+                            color = White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            "✕",
+                            color = White,
+                            fontSize = 23.sp,
+                            modifier = Modifier.clickable {
+                                menuOpen = false
+                            }
+                        )
+                    }
+
+                    Spacer(Modifier.height(25.dp))
+
+                    Text(
+                        user?.displayName ?: "SRS Member",
+                        color = White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        user?.email ?: "Email not added",
+                        color = Muted,
+                        fontSize = 12.sp
+                    )
+
+                    Spacer(Modifier.height(15.dp))
+                    Divider(color = Purple)
+
+                    val items = listOf(
+                        "👤" to "Personal Information",
+                        "🛡️" to "Account Verification",
+                        "💎" to "My Wallet",
+                        "🎁" to "My Gifts",
+                        "⚙️" to "Settings",
+                        "🎧" to "Help & Support",
+                        "ℹ️" to "About SRS"
+                    )
+
+                    items.forEach { item ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .clickable {
+                                    menuOpen = false
+                                    when (item.second) {
+                                        "Personal Information" ->
+                                            navigate("Personal Information")
+                                        "Account Verification" ->
+                                            navigate("Account Verification")
+                                        "My Wallet" -> navigate("Recharge")
+                                        "My Gifts" -> navigate("Gifts")
+                                        else -> navigate("Profile")
+                                    }
+                                }
+                                .padding(vertical = 15.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(item.first, fontSize = 22.sp)
+                            Spacer(Modifier.width(13.dp))
+                            Text(
+                                item.second,
+                                color = White,
+                                fontSize = 15.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text("›", color = Cyan, fontSize = 23.sp)
+                        }
+                    }
+
+                    Divider(color = Purple)
+
+                    Text(
+                        "↪  Logout",
+                        color = Color.Red,
+                        fontSize = 17.sp,
+                        modifier = Modifier.fillMaxWidth()
+                            .clickable {
+                                auth.signOut()
+                                menuOpen = false
+                                navigate("Welcome")
+                            }
+                            .padding(vertical = 18.dp)
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                        .clickable { menuOpen = false }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PersonalInformationScreen(navigate: (String) -> Unit) {
+    val user = FirebaseAuth.getInstance().currentUser
+
     AppBackground {
         Column(
             modifier = Modifier.weight(1f)
                 .verticalScroll(rememberScrollState())
+                .padding(20.dp)
         ) {
-            AppHeader("SRS LIVESTREAM")
-
-            Box(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
-                    .height(165.dp)
-                    .background(
-                        Brush.linearGradient(listOf(Purple, Color(0xFF151044), Pink)),
-                        RoundedCornerShape(20.dp)
-                    ).clickable { navigate("Discover") }.padding(18.dp)
-            ) {
-                Column {
-                    Text("● LIVE TOGETHER", color = White,
-                        fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(12.dp))
-                    Text("Your stage.\nYour people.", color = White,
-                        fontSize = 25.sp, fontWeight = FontWeight.ExtraBold)
-                    Spacer(Modifier.height(8.dp))
-                    Text("JOIN NOW  →", color = Cyan,
-                        fontWeight = FontWeight.Bold)
-                }
-                Text("🎧", fontSize = 65.sp,
-                    modifier = Modifier.align(Alignment.CenterEnd))
+            AppHeader("Personal Information") {
+                navigate("Home")
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                QuickTile("🔥", "Live Rooms") { navigate("Discover") }
-                QuickTile("⭐", "Top Hosts") { navigate("Top Hosts") }
-                QuickTile("🎁", "Gifts") { navigate("Gifts") }
-                QuickTile("👑", "Recharge") { navigate("Recharge") }
-            }
-
-            SectionTitle("Popular Live Rooms") {
-                navigate("Discover")
-            }
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                LiveCard("🎤", "Music Night ❤️", "SRS Queen", "12.5K")
-                LiveCard("🎮", "Fun & Chat", "RDX Hero", "8.7K", Cyan)
-                LiveCard("💃", "Dance Time", "Lovely Girl", "7.6K", Pink)
-            }
-
-            SectionTitle("Popular Hosts") { navigate("Top Hosts") }
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                HostItem("👩", "Sana", "248K")
-                HostItem("👑", "Mim", "197K")
-                HostItem("🎤", "Riya", "185K")
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(15.dp)
-                    .background(Panel, RoundedCornerShape(17.dp))
-                    .border(1.dp, Purple, RoundedCornerShape(17.dp))
-                    .clickable { navigate("Gifts") }.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("🎁", fontSize = 30.sp)
-                Spacer(Modifier.width(12.dp))
-                Column {
-                    Text("Send Gifts & Support", color = White,
-                        fontWeight = FontWeight.Bold)
-                    Text("Your favorite host ❤️", color = Muted,
-                        fontSize = 12.sp)
-                }
-                Spacer(Modifier.weight(1f))
-                Text("›", color = Pink, fontSize = 28.sp)
-            }
+            ActionRow("👤", "Name: ${user?.displayName ?: "Not set"}")
+            ActionRow("✉️", "Email: ${user?.email ?: "Not added"}")
+            ActionRow("📱", "Phone: ${user?.phoneNumber ?: "Not added"}")
         }
-        BottomNav("Home", navigate)
+        BottomNav("Profile", navigate)
     }
 }
 
 @Composable
-fun HostItem(emoji: String, name: String, fans: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier.size(65.dp)
-                .background(
-                    Brush.linearGradient(listOf(Pink, Purple, Cyan)),
-                    CircleShape
-                ).padding(3.dp).background(Panel, CircleShape),
-            contentAlignment = Alignment.Center
-        ) { Text(emoji, fontSize = 32.sp) }
-        Text(name, color = White, fontSize = 12.sp,
-            fontWeight = FontWeight.Bold)
-        Text("$fans Fans", color = Muted, fontSize = 10.sp)
+fun AccountVerificationScreen(navigate: (String) -> Unit) {
+    val user = FirebaseAuth.getInstance().currentUser
+
+    AppBackground {
+        Column(
+            modifier = Modifier.weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp)
+        ) {
+            AppHeader("Account Verification") {
+                navigate("Home")
+            }
+
+            ActionRow(
+                "✉️",
+                if (user?.isEmailVerified == true)
+                    "Email: Verified"
+                else "Email: Not Verified"
+            )
+
+            ActionRow(
+                "📱",
+                if (user?.phoneNumber != null)
+                    "Phone: Linked"
+                else "Phone: Not Linked"
+            )
+
+            ActionRow("🪪", "Identity Verification: Not Submitted")
+
+            Text(
+                "Identity verification requires a secure review process.",
+                color = Muted,
+                fontSize = 13.sp
+            )
+        }
+        BottomNav("Profile", navigate)
     }
 }
-
-
-
 
 @Composable
 fun DiscoverScreen(navigate: (String) -> Unit) {
