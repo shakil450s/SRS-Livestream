@@ -63,8 +63,7 @@ fun SRSApp() {
     var page by remember { mutableStateOf("Welcome") }
 
     when (page) {
-        "Welcome" -> WelcomeScreen(
-            { page = "Login" },
+        "Welcome" -> WelcomeScreen({ page = "Home" },
             { page = "Create Account" },
             { page = "Home" }
         )
